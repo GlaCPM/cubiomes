@@ -1,6 +1,7 @@
 // check the biome at a block position
 #include "generator.h"
 #include <inttypes.h>
+#include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 
@@ -38,10 +39,9 @@ void* runThread(void* threadNumber) {
             totalFound += 1;
             pthread_create(&totalThread, NULL, saveTotal, (void*) totalFound);
             pthread_create(&logThread, NULL, saveSeed, (void*) seed);
-            printf("Total Found: %" PRId64 "   Seed: %" PRId64 ", height: %d\n", (uint64_t) totalFound, (uint64_t) seed, height);
+            float_t percent = ((float_t) seed)/2814749767106.56;
+            printf("Total Found: %" PRId64 " | Seed: %" PRId64 ", height: %d | %f%%\n", (uint64_t) totalFound, (uint64_t) seed, height, percent);
         }
-
-        //printf("Total Found: %" PRId64 "   Seed: %" PRId64 ", height: %d\n", (uint64_t) totalFound, (uint64_t) seed, height);
     }
 }
 
