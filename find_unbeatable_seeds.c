@@ -19,7 +19,7 @@ pthread_t totalThread;
 
 void* saveSeed(void* seed) {
     logfile = fopen("seeds.txt", "a");
-    fprintf(logfile, "%" PRId64 "\n", (int64_t) seed);
+    fprintf(logfile, "%" PRId64 "\n", (uint64_t) seed);
     fclose(logfile);
 }
 
@@ -35,15 +35,13 @@ void* runThread(void* threadNumber) {
         int height = getEndSurfaceHeight(mc, seed, 0, 0);
 
         if (height == 0) {
-            pthread_join(totalThread, NULL);
             totalFound += 1;
             pthread_create(&totalThread, NULL, saveTotal, (void*) totalFound);
-
-            pthread_join(logThread, NULL);
             pthread_create(&logThread, NULL, saveSeed, (void*) seed);
+            printf("Total Found: %" PRId64 "   Seed: %" PRId64 ", height: %d\n", (uint64_t) totalFound, (uint64_t) seed, height);
         }
 
-        printf("Total Found: %" PRId64 "   Seed: %" PRId64 ", height: %d\n", (int64_t) seed,(int64_t) totalFound, height);
+        //printf("Total Found: %" PRId64 "   Seed: %" PRId64 ", height: %d\n", (uint64_t) totalFound, (uint64_t) seed, height);
     }
 }
 
