@@ -10,3 +10,5 @@ docs/LayerSummary.toc
 *.a
 a.out
 
+seeds.txt
+total.txt
