@@ -622,37 +622,34 @@ void sampleNoiseColumnEnd(double column[],
  * Note that the noise columns should be of size: ncolxz[ colymax-colymin+1 ]
  */
 int getSurfaceHeight(
-        const double ncol00[], const double ncol01[],
-        const double ncol10[], const double ncol11[],
-        int colymin, int colymax, int blockspercell, double dx, double dz)
+        const double ncol00[],
+        int colymin, int colymax, int blockspercell)
 {
     int y, celly;
-    for (celly = colymax-1; celly >= colymin; celly--)
+    // fountianless finder optimization: the bottom of the end island is lower than the top of the island is away from the world height
+    for (celly = colymin; celly < colymax; celly++)
     {
         int idx = celly - colymin;
         double v000 = ncol00[idx];
-        double v001 = ncol01[idx];
-        double v100 = ncol10[idx];
-        double v101 = ncol11[idx];
         double v010 = ncol00[idx+1];
-        double v011 = ncol01[idx+1];
-        double v110 = ncol10[idx+1];
-        double v111 = ncol11[idx+1];
 
         for (y = blockspercell - 1; y >= 0; y--)
         {
             double dy = y / (double) blockspercell;
-            double noise = lerp3(dy, dx, dz, // Note: not x, y, z
-                v000, v010, v100, v110,
-                v001, v011, v101, v111);
+            // double noise = lerp3(dy, dx, dz, // Note: not x, y, z
+            //     v000, v010, v100, v110,
+            //     v001, v011, v101, v111);
+
+            // fountianless finder optimization: simplify noise function assuming x,z = 0
+            double noise = v000 + dy * (v010 - dy);
             if (noise > 0)
-                return celly * blockspercell + y;
+                return 1;
         }
     }
     return 0;
 }
 
-int getEndSurfaceHeight(int mc, uint64_t seed, int x, int z)
+int getEndSurfaceHeight(int mc, uint64_t seed)
 {
     EndNoise en;
     setEndSeed(&en, mc, seed);
@@ -661,80 +658,82 @@ int getEndSurfaceHeight(int mc, uint64_t seed, int x, int z)
     initSurfaceNoise(&sn, DIM_END, seed);
 
     // end noise columns vary on a grid of cell size = eight
-    int cellx = (x >> 3);
-    int cellz = (z >> 3);
-    double dx = (x & 7) / 8.0;
-    double dz = (z & 7) / 8.0;
+    // equal 0 when x,z = 0
+    int cellx = 0;
+    int cellz = 0;
 
     // abusing enum for local compile time constants rather than enumeration
     enum { y0 = 0, y1 = 32, yn = y1-y0+1 };
     double ncol00[yn];
-    double ncol01[yn];
-    double ncol10[yn];
-    double ncol11[yn];
+    // not used
+    // double ncol01[yn];
+    // double ncol10[yn];
+    // double ncol11[yn];
     sampleNoiseColumnEnd(ncol00, &sn, &en, cellx, cellz, y0, y1);
-    sampleNoiseColumnEnd(ncol01, &sn, &en, cellx, cellz+1, y0, y1);
-    sampleNoiseColumnEnd(ncol10, &sn, &en, cellx+1, cellz, y0, y1);
-    sampleNoiseColumnEnd(ncol11, &sn, &en, cellx+1, cellz+1, y0, y1);
+    // not used
+    // sampleNoiseColumnEnd(ncol01, &sn, &en, cellx, cellz+1, y0, y1);
+    // sampleNoiseColumnEnd(ncol10, &sn, &en, cellx+1, cellz, y0, y1);
+    // sampleNoiseColumnEnd(ncol11, &sn, &en, cellx+1, cellz+1, y0, y1);
 
-    return getSurfaceHeight(ncol00, ncol01, ncol10, ncol11, y0, y1, 4, dx, dz);
+    return getSurfaceHeight(ncol00, y0, y1, 4);
 }
 
-int mapEndSurfaceHeight(float *y, const EndNoise *en, const SurfaceNoise *sn,
-    int x, int z, int w, int h, int scale, int ymin)
-{
-    if (scale != 1 && scale != 2 && scale != 4 && scale != 8)
-        return 1;
+// doesn't work with modified function and not used
+// int mapEndSurfaceHeight(float *y, const EndNoise *en, const SurfaceNoise *sn,
+//     int x, int z, int w, int h, int scale, int ymin)
+// {
+//     if (scale != 1 && scale != 2 && scale != 4 && scale != 8)
+//         return 1;
 
-    int y0 = ymin >> 2;
-    if (y0 <  2) y0 =  2;
-    if (y0 > 17) y0 = 17;
-    int y1 = 18;
-    int yn = y1 - y0 + 1;
-    double cellmid = scale > 1 ? scale / 16.0 : 0;
-    int cellsiz = 8 / scale;
-    int cx = floordiv(x, cellsiz);
-    int cz = floordiv(z, cellsiz);
-    int cw = floordiv(x + w - 1, cellsiz) - cx + 2;
-    int i, j;
+//     int y0 = ymin >> 2;
+//     if (y0 <  2) y0 =  2;
+//     if (y0 > 17) y0 = 17;
+//     int y1 = 18;
+//     int yn = y1 - y0 + 1;
+//     double cellmid = scale > 1 ? scale / 16.0 : 0;
+//     int cellsiz = 8 / scale;
+//     int cx = floordiv(x, cellsiz);
+//     int cz = floordiv(z, cellsiz);
+//     int cw = floordiv(x + w - 1, cellsiz) - cx + 2;
+//     int i, j;
 
-    double *buf = malloc(sizeof(double) * yn * cw * 2);
-    double *ncol[2];
-    ncol[0] = buf;
-    ncol[1] = buf + yn * cw;
+//     double *buf = malloc(sizeof(double) * yn * cw * 2);
+//     double *ncol[2];
+//     ncol[0] = buf;
+//     ncol[1] = buf + yn * cw;
 
-    for (i = 0; i < cw; i++)
-        sampleNoiseColumnEnd(ncol[1]+i*yn, sn, en, cx+i, cz+0, y0, y1);
+//     for (i = 0; i < cw; i++)
+//         sampleNoiseColumnEnd(ncol[1]+i*yn, sn, en, cx+i, cz+0, y0, y1);
 
-    for (j = 0; j < h; j++)
-    {
-        int cj = floordiv(z + j, cellsiz);
-        int dj = z + j - cj * cellsiz;
-        if (j == 0 || dj == 0)
-        {
-            double *tmp = ncol[0];
-            ncol[0] = ncol[1];
-            ncol[1] = tmp;
-            for (i = 0; i < cw; i++)
-                sampleNoiseColumnEnd(ncol[1]+i*yn, sn, en, cx+i, cj+1, y0, y1);
-        }
+//     for (j = 0; j < h; j++)
+//     {
+//         int cj = floordiv(z + j, cellsiz);
+//         int dj = z + j - cj * cellsiz;
+//         if (j == 0 || dj == 0)
+//         {
+//             double *tmp = ncol[0];
+//             ncol[0] = ncol[1];
+//             ncol[1] = tmp;
+//             for (i = 0; i < cw; i++)
+//                 sampleNoiseColumnEnd(ncol[1]+i*yn, sn, en, cx+i, cj+1, y0, y1);
+//         }
 
-        for (i = 0; i < w; i++)
-        {
-            int ci = floordiv(x + i, cellsiz);
-            int di = x + i - ci * cellsiz;
-            double dx = di / (double) cellsiz + cellmid;
-            double dz = dj / (double) cellsiz + cellmid;
-            double *ncol0 = ncol[0] + (ci - cx) * yn;
-            double *ncol1 = ncol[1] + (ci - cx) * yn;
-            y[j*w+i] = getSurfaceHeight(ncol0, ncol1, ncol0+yn, ncol1+yn,
-                y0, y1, 4, dx, dz);
-        }
-    }
+//         for (i = 0; i < w; i++)
+//         {
+//             int ci = floordiv(x + i, cellsiz);
+//             int di = x + i - ci * cellsiz;
+//             double dx = di / (double) cellsiz + cellmid;
+//             double dz = dj / (double) cellsiz + cellmid;
+//             double *ncol0 = ncol[0] + (ci - cx) * yn;
+//             double *ncol1 = ncol[1] + (ci - cx) * yn;
+//             y[j*w+i] = getSurfaceHeight(ncol0, ncol1, ncol0+yn, ncol1+yn,
+//                 y0, y1, 4, dx, dz);
+//         }
+//     }
 
-    free(buf);
-    return 0;
-}
+//     free(buf);
+//     return 0;
+// }
 
 int genEndScaled(const EndNoise *en, int *out, Range r, int mc, uint64_t sha)
 {
@@ -1225,7 +1224,7 @@ int sampleBiomeNoiseBeta(const BiomeNoiseBeta *bnb, int64_t *np, double *nv,
 
 int getOldBetaBiome(float t, float h)
 {
-    static const uint8_t biome_table_beta_1_7[64*64] = 
+    static const uint8_t biome_table_beta_1_7[64*64] =
     {
         5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
         6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,1,1,1,1,
@@ -1971,5 +1970,3 @@ Range getVoronoiSrcRange(Range r)
     }
     return s;
 }
-
-

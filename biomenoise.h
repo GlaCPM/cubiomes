@@ -215,7 +215,7 @@ int genNetherScaled(const NetherNoise *nn, int *out, Range r, int mc, uint64_t s
 void setEndSeed(EndNoise *en, int mc, uint64_t seed);
 int mapEndBiome(const EndNoise *en, int *out, int x, int z, int w, int h);
 int mapEnd(const EndNoise *en, int *out, int x, int z, int w, int h);
-int getEndSurfaceHeight(int mc, uint64_t seed, int x, int z);
+int getEndSurfaceHeight(int mc, uint64_t seed);
 int mapEndSurfaceHeight(float *y, const EndNoise *en, const SurfaceNoise *sn,
     int x, int z, int w, int h, int scale, int ymin);
 
@@ -252,7 +252,7 @@ double approxSurfaceBeta(const BiomeNoiseBeta *bnb, const SurfaceNoiseBeta *snb,
     int x, int z); // doesn't really work yet
 
 /**
- * (Alpha 1.2 - Beta 1.7) 
+ * (Alpha 1.2 - Beta 1.7)
  * Temperature and humidity values to biome.
  */
 int getOldBetaBiome(float t, float h);
@@ -311,6 +311,3 @@ Range getVoronoiSrcRange(Range r);
 #endif
 
 #endif /* BIOMENOISE_H_ */
-
-
-
