@@ -166,8 +166,7 @@ extern "C"
 void initSurfaceNoise(SurfaceNoise *sn, int dim, uint64_t seed);
 void initSurfaceNoiseBeta(SurfaceNoiseBeta *snb, uint64_t seed);
 double sampleSurfaceNoise(const SurfaceNoise *sn, int x, int y, int z);
-double sampleSurfaceNoiseBetween(const SurfaceNoise *sn, int x, int y, int z,
-    double noiseMin, double noiseMax);
+double sampleSurfaceNoiseBetween(const SurfaceNoise *sn, int y);
 
 
 //==============================================================================

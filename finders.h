@@ -270,8 +270,8 @@ int mapEndIslandHeight(float *y, const EndNoise *en, uint64_t seed,
 /* Checks if the given chunk contains no blocks. This included a check for
  * small end islands.
  */
-int isEndChunkEmpty(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
-    int chunkX, int chunkZ);
+// int isEndChunkEmpty(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
+//     int chunkX, int chunkZ);
 
 //==============================================================================
 // Finding Strongholds and Spawn
@@ -470,10 +470,10 @@ void getFixedEndGateways(int mc, uint64_t seed, Pos src[20]);
 /* Get the outer linked Gateway destination for an inner source Gateway.
  * (mc > MC_1_12)
  */
-Pos getLinkedGatewayChunk(const EndNoise *en, const SurfaceNoise *sn,
-    uint64_t seed, Pos src, Pos *dst);
-Pos getLinkedGatewayPos(const EndNoise *en, const SurfaceNoise *sn,
-    uint64_t seed, Pos src);
+// Pos getLinkedGatewayChunk(const EndNoise *en, const SurfaceNoise *sn,
+//     uint64_t seed, Pos src, Pos *dst);
+// Pos getLinkedGatewayPos(const EndNoise *en, const SurfaceNoise *sn,
+//     uint64_t seed, Pos src);
 
 
 /* Find the number of each type of house that generate in a village
@@ -839,4 +839,3 @@ Pos getLargeStructurePos(StructureConfig config, uint64_t seed, int regX, int re
 #endif
 
 #endif // FINDERS_H_
-

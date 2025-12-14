@@ -520,114 +520,115 @@ int mapEndIslandHeight(float *y, const EndNoise *en, uint64_t seed,
 
 float getEndHeightNoise(const EndNoise *en, int x, int z, int range);
 
-int isEndChunkEmpty(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
-    int chunkX, int chunkZ)
-{
-    int i, j, k;
-    int x = chunkX * 2;
-    int z = chunkZ * 2;
-    double depth[3][3];
-    float y[256];
+// broken, not used
+// int isEndChunkEmpty(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
+//     int chunkX, int chunkZ)
+// {
+//     int i, j, k;
+//     int x = chunkX * 2;
+//     int z = chunkZ * 2;
+//     double depth[3][3];
+//     float y[256];
 
-    // check if small end islands intersect this chunk
-    for (j = -1; j <= +1; j++)
-    {
-        for (i = -1; i <= +1; i++)
-        {
-            EndIsland is[2];
-            int n = getEndIslands(is, en->mc, seed, chunkX+i, chunkZ+j);
-            while (n --> 0)
-            {
-                if (is[n].x + is[n].r <= chunkX*16) continue;
-                if (is[n].z + is[n].r <= chunkZ*16) continue;
-                if (is[n].x - is[n].r > chunkX*16 + 15) continue;
-                if (is[n].z - is[n].r > chunkZ*16 + 15) continue;
-                int id;
-                mapEndBiome(en, &id, is[n].x >> 4, is[n].z >> 4, 1, 1);
-                if (id == small_end_islands)
-                    return 0;
-            }
-        }
-    }
+//     // check if small end islands intersect this chunk
+//     for (j = -1; j <= +1; j++)
+//     {
+//         for (i = -1; i <= +1; i++)
+//         {
+//             EndIsland is[2];
+//             int n = getEndIslands(is, en->mc, seed, chunkX+i, chunkZ+j);
+//             while (n --> 0)
+//             {
+//                 if (is[n].x + is[n].r <= chunkX*16) continue;
+//                 if (is[n].z + is[n].r <= chunkZ*16) continue;
+//                 if (is[n].x - is[n].r > chunkX*16 + 15) continue;
+//                 if (is[n].z - is[n].r > chunkZ*16 + 15) continue;
+//                 int id;
+//                 mapEndBiome(en, &id, is[n].x >> 4, is[n].z >> 4, 1, 1);
+//                 if (id == small_end_islands)
+//                     return 0;
+//             }
+//         }
+//     }
 
-    // clamped (32 + 46 - y) / 64.0
-    static const double upper_drop[] = {
-           1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, // 0-7
-           1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 63./64, // 8-15
-        62./64, 61./64, 60./64, 59./64, 58./64, 57./64, 56./64, 55./64, // 16-23
-        54./64, 53./64, 52./64, 51./64, 50./64, 49./64, 48./64, 47./64, // 24-31
-        46./64 // 32
-    };
-    // clamped (y - 1) / 7.0
-    static const double lower_drop[] = {
-          0.0,  0.0, 1./7, 2./7, 3./7, 4./7, 5./7, 6./7, // 0-7
-          1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 8-15
-          1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 16-23
-          1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 24-31
-          1.0, // 32
-    };
-    // inverse of clamping func: ( 30 * (1-l) / l + 3000 * (1-u) ) / u
-    static const double inverse_drop[] = {
-        1e9, 1e9, 180.0, 75.0, 40.0, 22.5, 12.0, 5.0, // 0-7
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // 8-14
-        1000./21, 3000./31, 9000./61, 200.0, // 15-18
-    };
-    const double eps = 0.001;
+//     // clamped (32 + 46 - y) / 64.0
+//     static const double upper_drop[] = {
+//            1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, // 0-7
+//            1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 63./64, // 8-15
+//         62./64, 61./64, 60./64, 59./64, 58./64, 57./64, 56./64, 55./64, // 16-23
+//         54./64, 53./64, 52./64, 51./64, 50./64, 49./64, 48./64, 47./64, // 24-31
+//         46./64 // 32
+//     };
+//     // clamped (y - 1) / 7.0
+//     static const double lower_drop[] = {
+//           0.0,  0.0, 1./7, 2./7, 3./7, 4./7, 5./7, 6./7, // 0-7
+//           1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 8-15
+//           1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 16-23
+//           1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, // 24-31
+//           1.0, // 32
+//     };
+//     // inverse of clamping func: ( 30 * (1-l) / l + 3000 * (1-u) ) / u
+//     static const double inverse_drop[] = {
+//         1e9, 1e9, 180.0, 75.0, 40.0, 22.5, 12.0, 5.0, // 0-7
+//         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // 8-14
+//         1000./21, 3000./31, 9000./61, 200.0, // 15-18
+//     };
+//     const double eps = 0.001;
 
-    // get the inner depth values and see if they imply blocks in the chunk
-    for (i = 0; i < 2; i++)
-    {
-        for (j = 0; j < 2; j++)
-        {
-            depth[i][j] = getEndHeightNoise(en, x+i, z+j, 0) - 8.0f;
-            for (k = 8; k <= 14; k++)
-            {
-                double u = upper_drop[k];
-                double l = lower_drop[k];
-                double noise = depth[i][j];
-                double pivot = inverse_drop[k] - noise;
-                noise += sampleSurfaceNoiseBetween(sn, x+i, k, z+j, pivot-eps, pivot+eps);
-                noise = lerp(u, -3000, noise);
-                noise = lerp(l, -30, noise);
-                if (noise > 0)
-                    return 0;
-            }
-        }
-    }
+//     // get the inner depth values and see if they imply blocks in the chunk
+//     for (i = 0; i < 2; i++)
+//     {
+//         for (j = 0; j < 2; j++)
+//         {
+//             depth[i][j] = getEndHeightNoise(en, x+i, z+j, 0) - 8.0f;
+//             for (k = 8; k <= 14; k++)
+//             {
+//                 double u = upper_drop[k];
+//                 double l = lower_drop[k];
+//                 double noise = depth[i][j];
+//                 double pivot = inverse_drop[k] - noise;
+//                 noise += sampleSurfaceNoiseBetween(sn, x+i, k, z+j, pivot-eps, pivot+eps);
+//                 noise = lerp(u, -3000, noise);
+//                 noise = lerp(l, -30, noise);
+//                 if (noise > 0)
+//                     return 0;
+//             }
+//         }
+//     }
 
-    // fill in the depth values at the boundaries to neighbouring chunks
-    for (i = 0; i < 3; i++)
-        depth[i][2] = getEndHeightNoise(en, x+i, z+2, 0) - 8.0f;
-    for (j = 0; j < 2; j++)
-        depth[2][j] = getEndHeightNoise(en, x+2, z+j, 0) - 8.0f;
+//     // fill in the depth values at the boundaries to neighbouring chunks
+//     for (i = 0; i < 3; i++)
+//         depth[i][2] = getEndHeightNoise(en, x+i, z+2, 0) - 8.0f;
+//     for (j = 0; j < 2; j++)
+//         depth[2][j] = getEndHeightNoise(en, x+2, z+j, 0) - 8.0f;
 
-    // see if none of the noise values can generate blocks
-    for (i = 0; i < 3; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            for (k = 2; k < 18; k++)
-            {
-                double u = upper_drop[k];
-                double l = lower_drop[k];
-                double noise = depth[i][j];
-                double pivot = inverse_drop[k] - noise;
-                noise += sampleSurfaceNoiseBetween(sn, x+i, k, z+j, pivot-eps, pivot+eps);
-                noise = lerp(u, -3000, noise);
-                noise = lerp(l, -30, noise);
-                if (noise > 0)
-                    goto L_check_full;
-            }
-        }
-    }
-    return 1;
+//     // see if none of the noise values can generate blocks
+//     for (i = 0; i < 3; i++)
+//     {
+//         for (j = 0; j < 3; j++)
+//         {
+//             for (k = 2; k < 18; k++)
+//             {
+//                 double u = upper_drop[k];
+//                 double l = lower_drop[k];
+//                 double noise = depth[i][j];
+//                 double pivot = inverse_drop[k] - noise;
+//                 noise += sampleSurfaceNoiseBetween(sn, x+i, k, z+j, pivot-eps, pivot+eps);
+//                 noise = lerp(u, -3000, noise);
+//                 noise = lerp(l, -30, noise);
+//                 if (noise > 0)
+//                     goto L_check_full;
+//             }
+//         }
+//     }
+//     return 1;
 
-L_check_full:
-    mapEndSurfaceHeight(y, en, sn, chunkX*16, chunkZ*16, 16, 16, 1, 0);
-    for (k = 0; k < 256; k++)
-        if (y[k] != 0) return 0;
-    return 1;
-}
+// L_check_full:
+//     mapEndSurfaceHeight(y, en, sn, chunkX*16, chunkZ*16, 16, 16, 1, 0);
+//     for (k = 0; k < 256; k++)
+//         if (y[k] != 0) return 0;
+//     return 1;
+// }
 
 //==============================================================================
 // Checking Biomes & Biome Helper Functions
@@ -2899,131 +2900,133 @@ void getFixedEndGateways(int mc, uint64_t seed, Pos src[20])
         src[i] = fixed[ order[i] ];
 }
 
-Pos getLinkedGatewayChunk(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
-    Pos src, Pos *dst)
-{
-    double invr = 1.0 / sqrt(src.x * src.x + src.z * src.z);
-    double dx = src.x * invr;
-    double dz = src.z * invr;
-    double px = dx * 1024;
-    double pz = dz * 1024;
-    dx *= 16;
-    dz *= 16;
+// broken, not used
+// Pos getLinkedGatewayChunk(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed,
+//     Pos src, Pos *dst)
+// {
+//     double invr = 1.0 / sqrt(src.x * src.x + src.z * src.z);
+//     double dx = src.x * invr;
+//     double dz = src.z * invr;
+//     double px = dx * 1024;
+//     double pz = dz * 1024;
+//     dx *= 16;
+//     dz *= 16;
 
-    int i;
-    Pos c;
-    c.x = (int) floor(px) >> 4;
-    c.z = (int) floor(pz) >> 4;
+//     int i;
+//     Pos c;
+//     c.x = (int) floor(px) >> 4;
+//     c.z = (int) floor(pz) >> 4;
 
-    if (isEndChunkEmpty(en, sn, seed, c.x, c.z))
-    {   // look forward for the first non-empty chunk
-        for (i = 0; i < 15; i++)
-        {
-            int qx = (int) floor(px += dx) >> 4;
-            int qz = (int) floor(pz += dz) >> 4;
-            if (qx == c.x && qz == c.z)
-                continue;
-            c.x = qx;
-            c.z = qz;
-            if (!isEndChunkEmpty(en, sn, seed, c.x, c.z))
-                break;
-        }
-    }
-    else
-    {   // look backward for the last non-empty chunk
-        for (i = 0; i < 15; i++)
-        {
-            int qx = (int) floor(px -= dx) >> 4;
-            int qz = (int) floor(pz -= dz) >> 4;
-            if (isEndChunkEmpty(en, sn, seed, qx, qz))
-                break;
-            c.x = qx;
-            c.z = qz;
-        }
-    }
-    if (dst)
-    {
-        dst->x = (int) floor(px);
-        dst->z = (int) floor(pz);
-    }
-    return c;
-}
+//     if (isEndChunkEmpty(en, sn, seed, c.x, c.z))
+//     {   // look forward for the first non-empty chunk
+//         for (i = 0; i < 15; i++)
+//         {
+//             int qx = (int) floor(px += dx) >> 4;
+//             int qz = (int) floor(pz += dz) >> 4;
+//             if (qx == c.x && qz == c.z)
+//                 continue;
+//             c.x = qx;
+//             c.z = qz;
+//             if (!isEndChunkEmpty(en, sn, seed, c.x, c.z))
+//                 break;
+//         }
+//     }
+//     else
+//     {   // look backward for the last non-empty chunk
+//         for (i = 0; i < 15; i++)
+//         {
+//             int qx = (int) floor(px -= dx) >> 4;
+//             int qz = (int) floor(pz -= dz) >> 4;
+//             if (isEndChunkEmpty(en, sn, seed, qx, qz))
+//                 break;
+//             c.x = qx;
+//             c.z = qz;
+//         }
+//     }
+//     if (dst)
+//     {
+//         dst->x = (int) floor(px);
+//         dst->z = (int) floor(pz);
+//     }
+//     return c;
+// }
 
-Pos getLinkedGatewayPos(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed, Pos src)
-{
-    float y[33*33]; // buffer for [16][16] and [33][33]
-    int ymin = 0;
-    int i, j;
+// broken, not used
+// Pos getLinkedGatewayPos(const EndNoise *en, const SurfaceNoise *sn, uint64_t seed, Pos src)
+// {
+//     float y[33*33]; // buffer for [16][16] and [33][33]
+//     int ymin = 0;
+//     int i, j;
 
-    Pos dst;
-    Pos c = getLinkedGatewayChunk(en, sn, seed, src, &dst);
+//     Pos dst;
+//     Pos c = getLinkedGatewayChunk(en, sn, seed, src, &dst);
 
-    if (en->mc > MC_1_16)
-    {
-        // The original java implementation has a bug where the result
-        // variable for the in-chunk block search is assigned a reference
-        // to the mutable iterator, which ends up as the last iteration
-        // position and discards the found location.
-        dst.x = c.x * 16 + 15;
-        dst.z = c.z * 16 + 15;
-    }
-    else
-    {
-        mapEndSurfaceHeight(y, en, sn, c.x*16, c.z*16, 16, 16, 1, 30);
-        mapEndIslandHeight(y, en, seed, c.x*16, c.z*16, 16, 16, 1);
+//     if (en->mc > MC_1_16)
+//     {
+//         // The original java implementation has a bug where the result
+//         // variable for the in-chunk block search is assigned a reference
+//         // to the mutable iterator, which ends up as the last iteration
+//         // position and discards the found location.
+//         dst.x = c.x * 16 + 15;
+//         dst.z = c.z * 16 + 15;
+//     }
+//     else
+//     {
+//         mapEndSurfaceHeight(y, en, sn, c.x*16, c.z*16, 16, 16, 1, 30);
+//         mapEndIslandHeight(y, en, seed, c.x*16, c.z*16, 16, 16, 1);
 
-        uint64_t d = 0;
-        for (j = 0; j < 16; j++)
-        {
-            for (i = 0; i < 16; i++)
-            {
-                int v = (int) y[j*16 + i];
-                if (v < 30) continue;
-                uint64_t dx = 16*c.x + i;
-                uint64_t dz = 16*c.z + j;
-                uint64_t dr = dx*dx + dz*dz + v*v;
-                if (dr > d)
-                {
-                    d = dr;
-                    dst.x = dx;
-                    dst.z = dz;
-                }
-            }
-        }
-        // use the previous result to retrieve the minimum y-level we know,
-        // we can skip generation of surfaces that are lower than this
-        for (i = 0; i < 16*16; i++)
-            if (y[i] > ymin)
-                ymin = (int) floor(y[i]);
-    }
+//         uint64_t d = 0;
+//         for (j = 0; j < 16; j++)
+//         {
+//             for (i = 0; i < 16; i++)
+//             {
+//                 int v = (int) y[j*16 + i];
+//                 if (v < 30) continue;
+//                 uint64_t dx = 16*c.x + i;
+//                 uint64_t dz = 16*c.z + j;
+//                 uint64_t dr = dx*dx + dz*dz + v*v;
+//                 if (dr > d)
+//                 {
+//                     d = dr;
+//                     dst.x = dx;
+//                     dst.z = dz;
+//                 }
+//             }
+//         }
+//         // use the previous result to retrieve the minimum y-level we know,
+//         // we can skip generation of surfaces that are lower than this
+//         for (i = 0; i < 16*16; i++)
+//             if (y[i] > ymin)
+//                 ymin = (int) floor(y[i]);
+//     }
 
-    Pos sp = { dst.x-16, dst.z-16 };
-    // checking end islands is much cheaper than surface height generation, so
-    // we can also skip surface generation lower than the highest island around
-    memset(y, 0, sizeof(float)*33*33);
-    mapEndIslandHeight(y, en, seed, sp.x, sp.z, 33, 33, 1);
-    for (i = 0; i < 33*33; i++)
-        if (y[i] > ymin)
-            ymin = (int) floor(y[i]);
+//     Pos sp = { dst.x-16, dst.z-16 };
+//     // checking end islands is much cheaper than surface height generation, so
+//     // we can also skip surface generation lower than the highest island around
+//     memset(y, 0, sizeof(float)*33*33);
+//     mapEndIslandHeight(y, en, seed, sp.x, sp.z, 33, 33, 1);
+//     for (i = 0; i < 33*33; i++)
+//         if (y[i] > ymin)
+//             ymin = (int) floor(y[i]);
 
-    mapEndSurfaceHeight(y, en, sn, sp.x, sp.z, 33, 33, 1, ymin);
-    mapEndIslandHeight(y, en, seed, sp.x, sp.z, 33, 33, 1);
+//     mapEndSurfaceHeight(y, en, sn, sp.x, sp.z, 33, 33, 1, ymin);
+//     mapEndIslandHeight(y, en, seed, sp.x, sp.z, 33, 33, 1);
 
-    float v = -1;
-    for (i = 0; i < 33; i++)
-    {
-        for (j = 0; j < 33; j++)
-        {
-            if (y[j*33 + i] <= v)
-                continue;
-            v = y[j*33 + i];
-            dst.x = sp.x + i;
-            dst.z = sp.z + j;
-        }
-    }
+//     float v = -1;
+//     for (i = 0; i < 33; i++)
+//     {
+//         for (j = 0; j < 33; j++)
+//         {
+//             if (y[j*33 + i] <= v)
+//                 continue;
+//             v = y[j*33 + i];
+//             dst.x = sp.x + i;
+//             dst.z = sp.z + j;
+//         }
+//     }
 
-    return dst;
-}
+//     return dst;
+// }
 
 
 //==============================================================================
@@ -5615,5 +5618,3 @@ int getLargestRec(int match, const int *ids, int sx, int sz, Pos *p0, Pos *p1)
     free(meta);
     return ret;
 }
-
-
