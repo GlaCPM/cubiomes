@@ -13,7 +13,7 @@ uint64_t totalFound = 0;
 int threadCount = 12;
 
 FILE *logfile;
-int lastSeed = 0;
+uint64_t lastSeed = 0;
 
 pthread_t logThread;
 pthread_t totalThread;
@@ -48,6 +48,8 @@ void* runThread(void* threadNumber) {
                 totalFound += 1;
                 pthread_create(&totalThread, NULL, saveTotal, (void*) totalFound);
                 pthread_create(&logThread, NULL, saveSeed, (void*) seed);
+                pthread_detach(totalThread);
+                pthread_detach(logThread);
                 float_t percent = ((float_t) seed)/2814749767106.56;
                 printf("Total Found: %" PRId64 " | Seed: %" PRId64 ", height: %d | %f%%\n", (uint64_t) totalFound, (uint64_t) seed, height, percent);
         }
@@ -62,15 +64,15 @@ int main() {
         while (fgets(lastSeedString, 32, logfile)) {
             continue;
         }
-        lastSeed = atoi(lastSeedString);
+        lastSeed = strtoull(lastSeedString, NULL, 10);
         fclose(logfile);
     }
 
-    char totalString[8];
+    char totalString[32];
     totalfile = fopen("total.txt", "r");
     if (totalfile != NULL) {
-        fgets(totalString, 8, totalfile);
-        totalFound = atoi(totalString);
+        fgets(totalString, 32, totalfile);
+        totalFound = strtoull(totalString, NULL, 10);
         fclose(totalfile);
     }
 
@@ -102,8 +104,9 @@ int main() {
     pthread_join(thread10, NULL);
     pthread_join(thread11, NULL);
 
-    pthread_join(totalThread, NULL);
-    pthread_join(logThread, NULL);
+    while (saving != 2) {
+        continue;
+    }
 
     return 0;
 }
