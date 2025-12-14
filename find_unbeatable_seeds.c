@@ -40,16 +40,16 @@ void* runThread(void* threadNumber) {
         int height = getEndSurfaceHeight(mc, seed);
 
         if (height == 0) {
-	    // prevent race conditions
-	    while (saving != 2) {
-	        continue;
-	    }
-	    saving = 0;
-            totalFound += 1;
-            pthread_create(&totalThread, NULL, saveTotal, (void*) totalFound);
-            pthread_create(&logThread, NULL, saveSeed, (void*) seed);
-            float_t percent = ((float_t) seed)/2814749767106.56;
-            printf("Total Found: %" PRId64 " | Seed: %" PRId64 ", height: %d | %f%%\n", (uint64_t) totalFound, (uint64_t) seed, height, percent);
+    	    // prevent race conditions
+    	    while (saving != 2) {
+    	        continue;
+    	    }
+    	    saving = 0;
+                totalFound += 1;
+                pthread_create(&totalThread, NULL, saveTotal, (void*) totalFound);
+                pthread_create(&logThread, NULL, saveSeed, (void*) seed);
+                float_t percent = ((float_t) seed)/2814749767106.56;
+                printf("Total Found: %" PRId64 " | Seed: %" PRId64 ", height: %d | %f%%\n", (uint64_t) totalFound, (uint64_t) seed, height, percent);
         }
     }
 }
